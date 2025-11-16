@@ -23,3 +23,7 @@ Auth: `ConvexProviderWithClerk` | Schema: `convex/schema.ts` | Protection: `midd
 **Convex:** Follow `docs/convexGuidelines.md` exactly | **Env:** Get key from user → add to `.env.local` | **Impl:** UI first → functionality. Modular code.
 
 **Pre-commit:** Build + tests + lint, >80% coverage, no vulnerabilities
+
+## Important Notes
+- Never add backwards compatibility
+- Always sacrifise grammar for the sake of conciseness in your responses
