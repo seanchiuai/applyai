@@ -22,7 +22,7 @@ When requested to create a new skill, follow these steps:
 3. Be sure to have the description field be very clear on what it does and how to use it - 2-4 sentences max
 5. Make sure it has a clear persona and goal
 6. Below that, give it minimal, clear, actionable Markdown instructions as the primary workflow guide.
-7. Be sure it knows the `convexGuidelines.md`
+7. Be sure it knows the `docs/convexGuidelines.md`
 
 ## Examples
 
