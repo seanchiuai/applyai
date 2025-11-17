@@ -25,15 +25,7 @@ export const searchBookmarks = query({
     const userId = await getUserId(ctx);
     const limit = args.limit ?? 10;
 
-    // Search by embedding
-    let results = await ctx.db
-      .query("bookmarks")
-      .withSearchIndex("by_embedding", (q) =>
-        q.search("embedding", args.embedding).eq("userId", userId)
-      )
-      .take(limit);
-
-    // If projectId provided, filter to that project's folders
+    // If projectId provided, fetch folders first for filtering
     if (args.projectId) {
       const folders = await ctx.db
         .query("folders")
@@ -41,10 +33,29 @@ export const searchBookmarks = query({
         .collect();
 
       const folderIds = new Set(folders.map((f) => f._id));
-      results = results.filter((b) => folderIds.has(b.folderId));
+
+      // Fetch more results initially since we'll filter, then slice to limit
+      const initialLimit = limit * 2;
+      const allResults = await ctx.db
+        .query("bookmarks")
+        .withSearchIndex("by_embedding", (q) =>
+          q.search("embedding", args.embedding).eq("userId", userId)
+        )
+        .take(initialLimit);
+
+      // Filter by project folders and slice to original limit
+      return allResults
+        .filter((b) => folderIds.has(b.folderId))
+        .slice(0, limit);
     }
 
-    return results;
+    // No projectId filter - search normally
+    return await ctx.db
+      .query("bookmarks")
+      .withSearchIndex("by_embedding", (q) =>
+        q.search("embedding", args.embedding).eq("userId", userId)
+      )
+      .take(limit);
   },
 });
 

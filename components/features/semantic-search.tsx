@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Search } from "lucide-react";
+import { toast } from "sonner";
 import type { Id } from "@/convex/_generated/dataModel";
 
 interface SemanticSearchProps {
@@ -45,8 +46,9 @@ export function SemanticSearch({ projectId, limit = 10 }: SemanticSearchProps) {
     try {
       const embeddingVector = await generateEmbedding({ text: query });
       setEmbedding(embeddingVector);
-    } catch (error) {
-      console.error("Failed to generate embedding:", error);
+    } catch {
+      toast.error("Failed to generate search embedding. Please try again.");
+      setEmbedding(null); // Clear stale results
     } finally {
       setIsSearching(false);
     }

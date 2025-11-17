@@ -19,6 +19,7 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   // Projects table
+  // Note: isDefault uniqueness per user is enforced in mutations (only one default project per user)
   projects: defineTable({
     userId: v.string(),
     name: v.string(),
@@ -30,6 +31,7 @@ export default defineSchema({
     .index("by_user_default", ["userId", "isDefault"]),
 
   // Folders table
+  // Note: Cycle detection for parentFolderId is enforced in mutations
   folders: defineTable({
     projectId: v.id("projects"),
     parentFolderId: v.optional(v.id("folders")),
@@ -58,6 +60,7 @@ export default defineSchema({
   })
     .index("by_folder", ["folderId"])
     .index("by_user", ["userId"])
+    .index("by_user_url", ["userId", "url"]) // For duplicate URL detection
     .searchIndex("by_embedding", {
       searchField: "embedding",
       filterFields: ["userId", "folderId"],

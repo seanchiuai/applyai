@@ -79,6 +79,13 @@ export const createBookmark = mutation({
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
 
+    // Validate URL format
+    try {
+      new URL(args.url);
+    } catch {
+      throw new Error("Invalid URL format");
+    }
+
     // Verify folder exists and belongs to user
     const folder = await ctx.db.get(args.folderId);
     if (!folder || folder.userId !== userId) {
@@ -111,6 +118,11 @@ export const updateBookmarkEmbedding = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
+
+    // Validate embedding array length
+    if (args.embedding.length !== 1536) {
+      throw new Error(`Invalid embedding length: expected 1536, got ${args.embedding.length}`);
+    }
 
     const bookmark = await ctx.db.get(args.bookmarkId);
     if (!bookmark || bookmark.userId !== userId) {

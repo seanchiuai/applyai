@@ -19,7 +19,7 @@
 **Configuration:**
 - `.env.local`: Added OPENAI_API_KEY placeholder
 - `.env.example`: Environment variable template
-- `package.json`: Added `openai` SDK dependency
+- `package.json`: Added `openai` and `tiktoken` dependencies
 
 **Documentation:**
 - `VECTOR_SEARCH_SETUP.md`: Complete setup and usage guide

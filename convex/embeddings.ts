@@ -34,6 +34,12 @@ export const generateEmbedding = action({
     text: v.string(),
   },
   handler: async (ctx, { text }): Promise<number[]> => {
+    // Authorization check - ensure authenticated or service context
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authorized to generate embeddings");
+    }
+
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error("OPENAI_API_KEY environment variable is not set");
@@ -50,7 +56,14 @@ export const generateEmbedding = action({
         input: truncatedText,
       });
 
-      return response.data[0].embedding;
+      const embedding = response.data[0].embedding;
+
+      // Validate embedding length
+      if (embedding.length !== 1536) {
+        throw new Error(`Invalid embedding length from OpenAI: expected 1536, got ${embedding.length}`);
+      }
+
+      return embedding;
     } catch (error) {
       console.error("Failed to generate embedding:", error);
       throw error;
@@ -59,24 +72,71 @@ export const generateEmbedding = action({
 });
 
 /**
- * Retry function with exponential backoff for rate limits
+ * Type guard to check if error has status property
+ */
+function hasStatus(error: unknown): error is { status: number } {
+  return typeof error === "object" && error !== null && "status" in error;
+}
+
+/**
+ * Type guard to check if error has code property
+ */
+function hasCode(error: unknown): error is { code: string } {
+  return typeof error === "object" && error !== null && "code" in error;
+}
+
+/**
+ * Check if error is retryable
+ */
+function isRetryableError(error: unknown): boolean {
+  // Check HTTP status codes
+  if (hasStatus(error)) {
+    const status = error.status;
+    // Retry on rate limits and server errors
+    if (status === 429 || status === 500 || status === 502 || status === 503) {
+      return true;
+    }
+  }
+
+  // Check network error codes
+  if (hasCode(error)) {
+    const code = error.code;
+    if (code === "ECONNRESET" || code === "ETIMEDOUT" || code === "ENOTFOUND") {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Retry function with exponential backoff and jitter for rate limits and transient errors
  */
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxRetries = 3
+  maxRetries = 5
 ): Promise<T> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
-    } catch (error: any) {
-      if (error.status === 429 && i < maxRetries - 1) {
-        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        continue;
+    } catch (error: unknown) {
+      const isLastAttempt = i === maxRetries - 1;
+
+      if (!isRetryableError(error) || isLastAttempt) {
+        throw error;
       }
-      throw error;
+
+      // Exponential backoff with jitter: base delay * 2^i + random jitter
+      const baseDelay = Math.pow(2, i) * 1000; // 1s, 2s, 4s, 8s, 16s
+      const jitter = Math.random() * 1000; // 0-1s random jitter
+      const delay = baseDelay + jitter;
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
+
+  // This should never be reached due to throw in last iteration
+  throw new Error("Max retries exceeded");
 }
 
 /**
@@ -118,28 +178,59 @@ export const generateBookmarkEmbedding = action({
 
 /**
  * Batch generate embeddings for bookmarks without embeddings
+ * Processes bookmarks in concurrent batches with rate limiting
  */
 export const batchGenerateEmbeddings = action({
   args: {
     userId: v.string(),
+    limit: v.optional(v.number()),
   },
-  handler: async (ctx, { userId }): Promise<number> => {
+  handler: async (ctx, { userId, limit = 100 }): Promise<{ success: number; failed: string[] }> => {
     // Get all bookmarks without embeddings
-    const bookmarks = await ctx.runQuery(
+    const allBookmarks = await ctx.runQuery(
       api.bookmarks.listBookmarksWithoutEmbeddings,
       { userId }
     );
 
-    let count = 0;
-    for (const bookmark of bookmarks) {
-      try {
-        await ctx.runAction(api.embeddings.generateBookmarkEmbedding, { bookmarkId: bookmark._id });
-        count++;
-      } catch (error) {
-        console.error(`Failed to generate embedding for ${bookmark._id}:`, error);
+    // Limit number of bookmarks to process
+    const bookmarks = allBookmarks.slice(0, limit);
+
+    let successCount = 0;
+    const failedIds: string[] = [];
+
+    // Process in batches of 3 for concurrent processing
+    const BATCH_SIZE = 3;
+    const BATCH_DELAY = 1000; // 1s delay between batches
+
+    for (let i = 0; i < bookmarks.length; i += BATCH_SIZE) {
+      const batch = bookmarks.slice(i, i + BATCH_SIZE);
+
+      // Process batch concurrently
+      const results = await Promise.allSettled(
+        batch.map((bookmark) =>
+          ctx.runAction(api.embeddings.generateBookmarkEmbedding, {
+            bookmarkId: bookmark._id,
+          })
+        )
+      );
+
+      // Track success/failure
+      results.forEach((result, index) => {
+        const bookmarkId = batch[index]._id;
+        if (result.status === "fulfilled") {
+          successCount++;
+        } else {
+          failedIds.push(bookmarkId);
+          console.error(`Failed to generate embedding for ${bookmarkId}:`, result.reason);
+        }
+      });
+
+      // Add delay between batches (except after last batch)
+      if (i + BATCH_SIZE < bookmarks.length) {
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY));
       }
     }
 
-    return count;
+    return { success: successCount, failed: failedIds };
   },
 });

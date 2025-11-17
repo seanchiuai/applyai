@@ -41,6 +41,14 @@ export function AddBookmarkExample({ folderId }: AddBookmarkExampleProps) {
       return;
     }
 
+    // Validate URL format
+    try {
+      new URL(url.trim());
+    } catch {
+      toast.error("Please provide a valid URL");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
