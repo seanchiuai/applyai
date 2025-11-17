@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import ClientBody from "@/components/ClientBody";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "VIBED",
-  description: "Welcome to VIBED",
+  title: "VIBED - Minimalist Task Management",
+  description: "Simple, beautiful task management that sparks joy",
   icons: {
     icon: "/convex.svg",
   },
@@ -26,32 +20,32 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        <ClientBody className={`${geistMono.variable} antialiased font-mona-regular`}>
+        <ClientBody className="antialiased">
           <ClerkProvider
             dynamic
             appearance={{
-              baseTheme: "dark",
-              variables: {
-                colorPrimary: "#ffffff",
-                colorBackground: "#000000",
-                colorInputBackground: "#1a1a1a",
-                colorInputText: "#ffffff",
-                colorText: "#ffffff",
-                colorTextSecondary: "#b3b3b3",
-                colorNeutral: "#3a3a3a",
-                colorDanger: "#dc2626",
-                colorSuccess: "#10b981",
-                colorWarning: "#f59e0b",
-                borderRadius: "0.625rem",
+              layout: {
+                unsafe_disableDevelopmentModeWarnings: true,
               },
               elements: {
-                card: "bg-[#1a1a1a] border-[#3a3a3a]",
-                headerTitle: "text-white",
-                headerSubtitle: "text-[#b3b3b3]",
-                socialButtonsBlockButton: "border-[#3a3a3a] hover:bg-[#2a2a2a]",
-                formButtonPrimary: "bg-white text-black hover:bg-gray-200",
-                formFieldInput: "bg-[#1a1a1a] border-[#3a3a3a] text-white",
-                footerActionLink: "text-white hover:text-gray-300",
+                card: "glass border border-border",
+                headerTitle: "text-foreground font-bold",
+                headerSubtitle: "text-muted-foreground",
+                socialButtonsBlockButton: "border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all",
+                formButtonPrimary: "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all",
+                formFieldInput: "bg-input border border-border text-foreground rounded-xl focus:border-primary transition-colors placeholder:text-muted-foreground",
+                footerActionLink: "text-primary hover:text-primary/80 transition-colors",
+                formFieldLabel: "text-foreground",
+                formFieldInputShowPasswordButton: "text-muted-foreground hover:text-foreground",
+                dividerLine: "bg-border",
+                dividerText: "text-muted-foreground",
+                formHeaderTitle: "text-foreground",
+                formHeaderSubtitle: "text-muted-foreground",
+                socialButtonsBlockButtonText: "text-foreground",
+                formFieldSuccessText: "text-secondary",
+                formFieldErrorText: "text-destructive",
+                identityPreviewText: "text-foreground",
+                identityPreviewEditButton: "text-primary hover:text-primary/80",
               }
             }}
           >
