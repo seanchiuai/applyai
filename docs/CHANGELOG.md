@@ -2,6 +2,12 @@
 
 ## [Unreleased] - 2025-11-28
 
+### Added - Step-by-Step Application Flow
+- Dashboard now shows clear 2-step flow for college applications
+- Step 1: Payment settings (opens dialog popup)
+- Step 2: "Apply to Colleges" button launches browser-use automation
+- New API endpoint: `POST /api/browser-use/launch` - spawns `browser-use/main.py`
+
 ### Changed - Auth Migration: Clerk → Stack Auth
 
 **Migration Complete:**
