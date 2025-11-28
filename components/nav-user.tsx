@@ -6,7 +6,8 @@ import {
   IconSettings,
   IconUserCircle,
 } from "@tabler/icons-react"
-import { useUser, useClerk } from "@clerk/nextjs"
+import { useUser } from "@stackframe/stack"
+import { useRouter } from "next/navigation"
 
 import {
   Avatar,
@@ -31,17 +32,26 @@ import {
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { user } = useUser()
-  const { signOut, openUserProfile } = useClerk()
+  const user = useUser()
+  const router = useRouter()
 
   if (!user) {
     return null
   }
 
-  const userName = user.fullName || user.firstName || user.emailAddresses?.[0]?.emailAddress || "User"
-  const userEmail = user.primaryEmailAddress?.emailAddress || ""
-  const userAvatar = user.imageUrl || ""
+  const userName = user.displayName || user.primaryEmail || "User"
+  const userEmail = user.primaryEmail || ""
+  const userAvatar = user.profileImageUrl || ""
   const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
+  const handleSignOut = async () => {
+    await user.signOut()
+    router.push('/')
+  }
+
+  const handleOpenProfile = () => {
+    router.push('/handler/account-settings')
+  }
 
   return (
     <SidebarMenu>
@@ -87,7 +97,7 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => openUserProfile()}>
+              <DropdownMenuItem onClick={handleOpenProfile}>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
@@ -97,7 +107,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={handleSignOut}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

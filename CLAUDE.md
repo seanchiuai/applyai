@@ -3,14 +3,14 @@
 ## Workflow
 Check `PRD.json` for product requirements → `.claude/skills/` → `.claude/agents/` → `.claude/plans/`.
 
-**Agents:** clerk (auth), convex (backend), deployment (Vercel), nextjs (frontend)
+**Agents:** stack-auth (auth), convex (backend), deployment (Vercel), nextjs (frontend)
 
 ## Stack & Patterns
-Next.js 15 • Tailwind 4 + shadcn/ui • Clerk → JWT → Convex • TypeScript strict • `@/*` imports
+Next.js 15 • Tailwind 4 + shadcn/ui • Stack Auth → JWT → Convex • TypeScript strict • `@/*` imports
 
-Auth: `ConvexProviderWithClerk` | Schema: `convex/schema.ts` | Protection: `middleware.ts`
+Auth: `StackProvider` + `ConvexProvider` | Schema: `convex/schema.ts` | Protection: `middleware.ts`
 
-**Clerk+Convex:** Create "convex" JWT in Clerk → set `CLERK_JWT_ISSUER_DOMAIN` → config `convex/auth.config.ts`
+**Stack Auth+Convex:** Configure Stack Auth in `/stack/client.tsx` + `/stack/server.tsx` → Auth handlers at `/handler/*` → `convex.setAuth(stackClientApp.getConvexClientAuth({}))` → config `convex/auth.config.ts`
 
 ## Structure
 `/app/(auth|protected)` `/components` `/convex` `/docs` (all docs here, `CHANGELOG.md` for critical notes) `/.claude`

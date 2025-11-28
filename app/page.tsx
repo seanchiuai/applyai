@@ -1,8 +1,6 @@
 "use client";
 
 import { Authenticated, Unauthenticated } from "convex/react";
-import { SignUpButton } from "@clerk/nextjs";
-import { SignInButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -40,6 +38,8 @@ function RedirectToDashboard() {
 }
 
 function SignInForm() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen texture-minimal flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -57,11 +57,12 @@ function SignInForm() {
         {/* Auth Card */}
         <div className="card-minimal rounded-xl p-8 animate-scale-in stagger-2">
           <div className="flex flex-col gap-3">
-            <SignInButton mode="modal">
-              <Button className="w-full">
-                Sign in to continue
-              </Button>
-            </SignInButton>
+            <Button
+              className="w-full"
+              onClick={() => router.push('/handler/sign-in')}
+            >
+              Sign in to continue
+            </Button>
 
             <div className="relative my-3">
               <div className="absolute inset-0 flex items-center">
@@ -72,11 +73,13 @@ function SignInForm() {
               </div>
             </div>
 
-            <SignUpButton mode="modal">
-              <Button variant="outline" className="w-full">
-                Create account
-              </Button>
-            </SignUpButton>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push('/handler/sign-up')}
+            >
+              Create account
+            </Button>
           </div>
 
           {/* Feature List */}

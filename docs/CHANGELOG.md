@@ -1,5 +1,34 @@
 # Changelog
 
+## [Unreleased] - 2025-11-28
+
+### Changed - Auth Migration: Clerk → Stack Auth
+
+**Migration Complete:**
+- Removed Clerk packages (`@clerk/nextjs`, `@clerk/clerk-react`)
+- Installed Stack Auth (`@stackframe/stack` v2.8.54)
+- Migrated all auth flows to Stack Auth handlers at `/handler/*`
+
+**Files Modified:**
+- `components/ConvexClientProvider.tsx`: Replaced `ConvexProviderWithClerk` with `ConvexProvider`
+- `app/layout.tsx`: Removed `ClerkProvider`, kept `StackProvider` + `StackTheme`
+- `middleware.ts`: Replaced `clerkMiddleware` with `stackServerApp.getUser()` for route protection
+- `components/nav-user.tsx`: Updated to Stack Auth hooks (`useUser()`)
+- `app/page.tsx`: Replaced Clerk auth buttons with router redirects to `/handler/sign-in|sign-up`
+- `app/search-demo/page.tsx`: Updated `useUser` import to Stack Auth
+- `CLAUDE.md`: Updated auth references from Clerk to Stack Auth
+- `.claude/agents/`: Replaced `agent-clerk.md` with `agent-stack-auth.md`
+
+**No Breaking Changes:**
+- Convex backend functions unchanged (still use `ctx.auth.getUserIdentity()`)
+- Stack Auth JWT provider already configured in `convex/auth.config.ts`
+- Fresh start (no user data migration required)
+
+**Auth Flow:**
+- Sign in/up: `/handler/sign-in`, `/handler/sign-up`
+- Account settings: `/handler/account-settings`
+- Protected routes: Server-side middleware redirects unauthenticated users
+
 ## [Unreleased] - 2025-11-17
 
 ### Added - Tech Stack Agents

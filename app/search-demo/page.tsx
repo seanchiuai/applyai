@@ -2,10 +2,10 @@
 
 import { SemanticSearch } from "@/components/features/semantic-search";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@stackframe/stack";
 
 export default function SearchDemoPage() {
-  const { user } = useUser();
+  const user = useUser();
 
   if (!user) {
     return (
