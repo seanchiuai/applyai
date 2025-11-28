@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
+import CreditCardForm from "@/components/CreditCardForm";
 
 type Tab = "all" | "pending" | "completed";
 
@@ -92,13 +93,16 @@ export default function TodoDashboard() {
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="mb-12 animate-fade-in">
-        <div className="flex items-baseline gap-4 mb-3">
-          <h1 className="text-5xl font-bold tracking-tight">Tasks</h1>
-          <div className="px-3 py-1 rounded-md border border-border bg-card">
-            <span className="text-sm font-medium text-muted-foreground">
-              {todos?.length || 0}
-            </span>
+        <div className="flex items-baseline justify-between gap-4 mb-3">
+          <div className="flex items-baseline gap-4">
+            <h1 className="text-5xl font-bold tracking-tight">Tasks</h1>
+            <div className="px-3 py-1 rounded-md border border-border bg-card">
+              <span className="text-sm font-medium text-muted-foreground">
+                {todos?.length || 0}
+              </span>
+            </div>
           </div>
+          <CreditCardForm />
         </div>
         <p className="text-muted-foreground text-base">Clear mind, clear goals</p>
       </div>

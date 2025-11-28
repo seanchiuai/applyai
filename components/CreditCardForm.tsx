@@ -4,11 +4,21 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useUser } from "@stackframe/stack";
 import { toast } from "sonner";
+import { CreditCard } from "lucide-react";
 
 export default function CreditCardForm() {
   const user = useUser();
+  const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [cardData, setCardData] = useState({
@@ -53,13 +63,14 @@ export default function CreditCardForm() {
 
       toast.success("Credit card information saved securely");
 
-      // Clear the form
+      // Clear the form and close dialog
       setCardData({
         cardNumber: "",
         cardholderName: "",
         expiryDate: "",
         cvv: "",
       });
+      setOpen(false);
     } catch (error) {
       console.error("Error storing credit card:", error);
       toast.error(error instanceof Error ? error.message : "Failed to save credit card");
@@ -100,16 +111,22 @@ export default function CreditCardForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8 animate-fade-in">
-        <h1 className="text-4xl font-bold tracking-tight mb-2">Payment Settings</h1>
-        <p className="text-muted-foreground">
-          Securely store your credit card information using Stack Auth Data Vault
-        </p>
-      </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="gap-2">
+          <CreditCard className="w-4 h-4" />
+          Payment Settings
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Payment Settings</DialogTitle>
+          <DialogDescription>
+            Securely store your credit card information using Stack Auth Data Vault
+          </DialogDescription>
+        </DialogHeader>
 
-      <div className="card-minimal rounded-lg p-6 animate-scale-in stagger-1">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div className="space-y-2">
             <Label htmlFor="cardNumber">Card Number</Label>
             <Input
@@ -197,14 +214,14 @@ export default function CreditCardForm() {
             <div className="text-sm text-muted-foreground">
               <p className="font-medium text-foreground mb-1">Secure Encryption</p>
               <p>
-                Your credit card information is encrypted using Stack Auth's Data Vault with
+                Your credit card information is encrypted using Stack Auth Data Vault with
                 envelope encryption and rotating master keys. Even Stack Auth cannot access
                 your data without the secret key.
               </p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
