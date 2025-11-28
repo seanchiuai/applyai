@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackClientApp } from "../stack/client";
 import "./globals.css";
@@ -24,7 +25,9 @@ export default function RootLayout({
         <StackProvider app={stackClientApp}>
           <StackTheme>
             <ClientBody className="antialiased">
-              <ConvexClientProvider>{children}</ConvexClientProvider>
+              <Suspense fallback={<div>Loading...</div>}>
+                <ConvexClientProvider>{children}</ConvexClientProvider>
+              </Suspense>
             </ClientBody>
           </StackTheme>
         </StackProvider>
