@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackClientApp } from "../stack/client";
 import "./globals.css";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -19,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning><StackProvider app={stackClientApp}><StackTheme>
         <ClientBody className="antialiased">
           <ClerkProvider
             dynamic
@@ -52,7 +54,7 @@ export default function RootLayout({
             <ConvexClientProvider>{children}</ConvexClientProvider>
           </ClerkProvider>
         </ClientBody>
-      </body>
+      </StackTheme></StackProvider></body>
     </html>
   );
 }
