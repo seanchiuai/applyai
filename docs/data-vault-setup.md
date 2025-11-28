@@ -12,8 +12,9 @@ This guide explains how to set up Stack Auth's Data Vault for secure credit card
 1. Go to https://app.stack-auth.com/
 2. Select your project
 3. Navigate to **Data Vault** section (or equivalent settings area)
-4. Create a new Data Vault store with:
-   - **Store ID**: `creditcard-info` (or any ID you prefer)
+4. Create a new Data Vault store
+   - **Note**: Remember the Store ID you create - you'll need it in Step 3
+   - Example Store IDs: `payment-info`, `creditcard-info`, etc.
    - Configure encryption settings as needed
 
 ## Step 2: Generate Vault Secret
@@ -35,7 +36,8 @@ Update your `.env.local` file:
 STACK_DATA_VAULT_SECRET=<paste-your-generated-secret-here>
 
 # Data Vault Store ID (must match what you created in Step 1)
-STACK_DATA_VAULT_STORE_ID=creditcard-info
+# Example: payment-info, creditcard-info, etc.
+STACK_DATA_VAULT_STORE_ID=payment-info
 ```
 
 **IMPORTANT:**
