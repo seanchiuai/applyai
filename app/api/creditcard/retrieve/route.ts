@@ -21,27 +21,48 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get the Data Vault store for credit card info
-    const store = await stackServerApp.getDataVaultStore("creditcard-info");
+    // Get store ID from env or use default
+    const storeId = process.env.STACK_DATA_VAULT_STORE_ID || "creditcard-info";
 
-    // Retrieve the credit card data using the user's ID as the key
-    const creditCardData = await store.getValue(user.id, {
-      secret: vaultSecret,
-    });
+    try {
+      // Get the Data Vault store for credit card info
+      const store = await stackServerApp.getDataVaultStore(storeId);
 
-    if (!creditCardData) {
+      // Retrieve the credit card data using the user's ID as the key
+      const creditCardData = await store.getValue(user.id, {
+        secret: vaultSecret,
+      });
+
+      if (!creditCardData) {
+        return NextResponse.json(
+          { creditCard: null, message: "No credit card information found" },
+          { status: 200 }
+        );
+      }
+
+      const parsedData = JSON.parse(creditCardData);
+
       return NextResponse.json(
-        { creditCard: null, message: "No credit card information found" },
+        { creditCard: parsedData },
         { status: 200 }
       );
+    } catch (storeError: any) {
+      console.error("Data Vault store error:", storeError);
+
+      // Check if it's a "store does not exist" error
+      if (storeError?.message?.includes("does not exist") || storeError?.statusCode === 400) {
+        return NextResponse.json(
+          {
+            error: "Data Vault Not Configured",
+            message: `Data Vault store "${storeId}" does not exist. Please create it in your Stack Auth dashboard first.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      throw storeError;
     }
 
-    const parsedData = JSON.parse(creditCardData);
-
-    return NextResponse.json(
-      { creditCard: parsedData },
-      { status: 200 }
-    );
   } catch (error) {
     console.error("Error retrieving credit card:", error);
     return NextResponse.json(

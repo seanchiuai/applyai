@@ -31,20 +31,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get the Data Vault store for credit card info
-    const store = await stackServerApp.getDataVaultStore("creditcard-info");
+    // Get store ID from env or use default
+    const storeId = process.env.STACK_DATA_VAULT_STORE_ID || "creditcard-info";
 
-    // Store the credit card data using the user's ID as the key
-    const creditCardData = JSON.stringify({
-      cardNumber,
-      cardholderName,
-      expiryDate,
-      cvv,
-    });
+    try {
+      // Get the Data Vault store for credit card info
+      const store = await stackServerApp.getDataVaultStore(storeId);
 
-    await store.setValue(user.id, creditCardData, {
-      secret: vaultSecret,
-    });
+      // Store the credit card data using the user's ID as the key
+      const creditCardData = JSON.stringify({
+        cardNumber,
+        cardholderName,
+        expiryDate,
+        cvv,
+      });
+
+      await store.setValue(user.id, creditCardData, {
+        secret: vaultSecret,
+      });
+    } catch (storeError: any) {
+      console.error("Data Vault store error:", storeError);
+
+      // Check if it's a "store does not exist" error
+      if (storeError?.message?.includes("does not exist") || storeError?.statusCode === 400) {
+        return NextResponse.json(
+          {
+            error: "Data Vault Not Configured",
+            message: `Data Vault store "${storeId}" does not exist. Please create it in your Stack Auth dashboard first. Visit https://app.stack-auth.com/ and create a Data Vault store with ID "${storeId}".`,
+          },
+          { status: 400 }
+        );
+      }
+
+      throw storeError;
+    }
 
     return NextResponse.json(
       { success: true, message: "Credit card information stored securely" },
