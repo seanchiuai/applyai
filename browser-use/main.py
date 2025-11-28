@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import os
+import requests
 
 from dotenv import load_dotenv
 
@@ -50,6 +51,29 @@ def parse_user_context(context_path: str) -> dict:
     return context_info
 
 
+def fetch_credit_card_from_vault(user_id: str) -> dict | None:
+    """
+    Fetch credit card information from Stack Auth Data Vault via API.
+    """
+    try:
+        api_url = os.environ.get("NEXT_APP_API_URL", "http://localhost:3000")
+        response = requests.post(
+            f"{api_url}/api/creditcard/get-for-user",
+            json={"userId": user_id},
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("creditCard")
+        else:
+            print(f"Failed to fetch credit card: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Error fetching credit card from vault: {e}")
+        return None
+
+
 def parse_applicant_json(data_path: str) -> dict:
     """
     Parse applicant data from JSON file sent by the API.
@@ -58,6 +82,10 @@ def parse_applicant_json(data_path: str) -> dict:
 
     with open(data_path, 'r') as f:
         data = json.load(f)
+
+    # Fetch credit card information from Stack Auth Data Vault
+    user_id = data.get("user_id", "")
+    credit_card = fetch_credit_card_from_vault(user_id) if user_id else None
 
     # Map the JSON data to the expected format
     context_info = {
@@ -87,6 +115,7 @@ def parse_applicant_json(data_path: str) -> dict:
         "parents_separate_address": data.get("parents_separate_address", False),
         "siblings": data.get("siblings", 0),
         "siblings_applying_to_college": data.get("siblings_applying_to_college", False),
+        "credit_card": credit_card,
         "full_context": json.dumps(data, indent=2)
     }
 
