@@ -4,7 +4,7 @@ import * as React from "react"
 import {
   IconHelp,
   IconInnerShadowTop,
-  IconListDetails,
+  IconRocket,
   IconSettings,
 } from "@tabler/icons-react"
 
@@ -24,9 +24,9 @@ import {
 const data = {
   navMain: [
     {
-      title: "Tasks",
+      title: "Apply",
       url: "/tasks",
-      icon: IconListDetails,
+      icon: IconRocket,
     },
   ],
   navSecondary: [
@@ -55,7 +55,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/tasks">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Sean&apos;s Claude Code Web Template</span>
+                <span className="text-base font-semibold">ApplyAI</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
